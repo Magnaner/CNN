@@ -2,16 +2,20 @@
 """
 Created on Mon Nov 27 09:01:59 2017
 
-@author: Éric
+@author: Éric Magnan
+Original source:  DeepLearning.ai on Coursera
 """
 
  '''
- Deep Learning & Art: Neural Style Transfer
-Welcome to the second assignment of this week. In this assignment, you will learn about Neural Style Transfer. 
+Deep Learning & Art: Neural Style Transfer
+
+In this assignment, you will learn about Neural Style Transfer. 
 This algorithm was created by Gatys et al. (2015) (https://arxiv.org/abs/1508.06576).
+
 In this assignment, you will:
-Implement the neural style transfer algorithm
-Generate novel artistic images using your algorithm
+- Implement the neural style transfer algorithm
+- Generate novel artistic images using your algorithm
+
 Most of the algorithms you've studied optimize a cost function to get a set of parameter values. 
 In Neural Style Transfer, you'll optimize a cost function to get pixel values!
 '''
@@ -57,6 +61,7 @@ a tensor containing that variable's value. To run an image through this network,
 image to the model. In TensorFlow, you can do so using the tf.assign function. In particular, you will use 
 the assign function like this:
     model["input"].assign(image)
+
 This assigns the image as an input to the model. After this, if you want to access the activations of a 
 particular layer, say layer 4_2 when the network is run on this image, you would run a TensorFlow session on 
 the correct tensor conv4_2, as follows:
@@ -84,11 +89,13 @@ sky with a few clouds.
 As we saw in lecture, the earlier (shallower) layers of a ConvNet tend to detect lower-level features such 
 as edges and simple textures, and the later (deeper) layers tend to detect higher-level features such as 
 more complex textures as well as object classes.
+
 We would like the "generated" image G to have similar content as the input image C. Suppose you have chosen 
 some layer's activations to represent the content of an image. In practice, you'll get the most visually 
 pleasing results if you choose a layer in the middle of the network--neither too shallow nor too deep. 
 (After you have finished this exercise, feel free to come back and experiment with using different layers, 
 to see how the results vary.)
+
 So, suppose you have picked one particular hidden layer to use. Now, set the image C as the input to the 
 pretrained VGG network, and run forward propagation. Let  a(C)a(C)  be the hidden layer activations in the 
 layer you had chosen. (In lecture, we had written this as  a[l](C)a[l](C) , but here we'll drop the 
@@ -106,6 +113,7 @@ unrolling step isn't needed to compute  JcontentJcontent , but it will be good p
 need to carry out a similar operation later for computing the style const Jstyle .)
 
 Exercise: Compute the "content cost" using TensorFlow.
+
 Instructions: The 3 steps to implement this function are:
 1.  Retrieve dimensions from a_G:
     To retrieve dimensions from a tensor X, use: X.get_shape().as_list()
@@ -161,6 +169,7 @@ J_content = 6.76559
 What you should remember:
 The content cost takes a hidden layer activation of the neural network, and measures how different  a(C)a(C)  and  a(G)a(G)  are.
 When we minimize the content cost later, this will help make sure  GG  has similar content as  CC .
+
 3.2 - Computing the style cost
 For our running example, we will use the following style image:
 '''
@@ -171,15 +180,26 @@ imshow(style_image)
 '''
 This painting was painted in the style of impressionism.
 Lets see how you can now define a "style" const function Jstyle(S,G)Jstyle(S,G).
+
 3.2.1 - Style matrix
-The style matrix is also called a "Gram matrix." In linear algebra, the Gram matrix G of a set of vectors  (v1,…,vn)(v1,…,vn)  is the matrix of dot products, whose entries are  Gij=vTivj=np.dot(vi,vj)Gij=viTvj=np.dot(vi,vj) . In other words,  GijGij  compares how similar  vivi  is to  vjvj : If they are highly similar, you would expect them to have a large dot product, and thus for  GijGij  to be large.
-Note that there is an unfortunate collision in the variable names used here. We are following common terminology used in the literature, but  GG  is used to denote the Style matrix (or Gram matrix) as well as to denote the generated image  GG . We will try to make sure which  GG  we are referring to is always clear from the context.
+The style matrix is also called a "Gram matrix." In linear algebra, the Gram matrix G of a set of vectors  (v1,…,vn)(v1,…,vn)  is the 
+matrix of dot products, whose entries are  Gij=vTivj=np.dot(vi,vj)Gij=viTvj=np.dot(vi,vj) . In other words,  GijGij  compares how 
+similar  vivi  is to  vjvj : If they are highly similar, you would expect them to have a large dot product, and thus for  GijGij  to be 
+large. Note that there is an unfortunate collision in the variable names used here. We are following common terminology used in the 
+literature, but  GG  is used to denote the Style matrix (or Gram matrix) as well as to denote the generated image  GG. We will try to 
+make sure which  GG  we are referring to is always clear from the context.
+
 In NST, you can compute the Style matrix by multiplying the "unrolled" filter matrix with their transpose:
 
-The result is a matrix of dimension  (nC,nC)(nC,nC)  where  nCnC  is the number of filters. The value  GijGij  measures how similar the activations of filter  ii  are to the activations of filter  jj .
-One important part of the gram matrix is that the diagonal elements such as  GiiGii  also measures how active filter  ii  is. For example, suppose filter  ii  is detecting vertical textures in the image. Then  GiiGii  measures how common vertical textures are in the image as a whole: If  GiiGii  is large, this means that the image has a lot of vertical texture.
-By capturing the prevalence of different types of features ( GiiGii ), as well as how much different features occur together ( GijGij ), the Style matrix  GG  measures the style of an image.
-Exercise: Using TensorFlow, implement a function that computes the Gram matrix of a matrix A. The formula is: The gram matrix of A is  GA=AATGA=AAT . If you are stuck, take a look at Hint 1 and Hint 2.
+The result is a matrix of dimension  (nC,nC)  where  nC  is the number of filters. The value  Gij  measures how similar the activations 
+of filter  i  are to the activations of filter  j .
+One important part of the gram matrix is that the diagonal elements such as  Gii  also measures how active filter  i  is. For example, 
+suppose filter  i  is detecting vertical textures in the image. Then  Gii  measures how common vertical textures are in the image as a 
+whole: If  Gii  is large, this means that the image has a lot of vertical texture.
+By capturing the prevalence of different types of features ( Gii ), as well as how much different features occur together ( Gij ), the 
+Style matrix  GG  measures the style of an image.
+Exercise: Using TensorFlow, implement a function that computes the Gram matrix of a matrix A. The formula is: The gram matrix of A is 
+GA= A*A.T
 '''
 
 # GRADED FUNCTION: gram_matrix
@@ -217,19 +237,19 @@ GA = [[  6.42230511  -4.42912197  -2.09668207]
 
 '''
 3.2.2 - Style cost
-After generating the Style matrix (Gram matrix), your goal will be to minimize the distance between the Gram matrix of the "style" image S and that of the "generated" image G. For now, we are using only a single hidden layer a[l]a[l], and the corresponding style cost for this layer is defined as:
-J[l]style(S,G)=14×nC2×(nH×nW)2∑i=1nC∑j=1nC(G(S)ij−G(G)ij)2(2)
-(2)Jstyle[l](S,G)=14×nC2×(nH×nW)2∑i=1nC∑j=1nC(Gij(S)−Gij(G))2
-where G(S)G(S) and G(G)G(G) are respectively the Gram matrices of the "style" image and the "generated" image, computed using the hidden layer activations for a particular hidden layer in the network.
+After generating the Style matrix (Gram matrix), your goal will be to minimize the distance between the Gram matrix of the "style" 
+image S and that of the "generated" image G. For now, we are using only a single hidden layer a[l]a[l], and the corresponding style 
+cost for this layer is defined as:
+J[l]style(S,G) = 1 / (4 × n_C**2 × (n_H × n_W)**2) * (∑i=1-n_C ∑j=1-n_C (G(S)ij − G(G)ij)**2)
+where G(S) and G(G) are respectively the Gram matrices of the "style" image and the "generated" image, computed using the hidden layer 
+activations for a particular hidden layer in the network.
+
 Exercise: Compute the style cost for a single layer.
 Instructions: The 3 steps to implement this function are:
-Retrieve dimensions from the hidden layer activations a_G:
-To retrieve dimensions from a tensor X, use: X.get_shape().as_list()
-Unroll the hidden layer activations a_S and a_G into 2D matrices, as explained in the picture above.
-You may find Hint1 and Hint2 useful.
-Compute the Style matrix of the images S and G. (Use the function you had previously written.)
-Compute the Style cost:
-You may find Hint3, Hint4 and Hint5 useful.
+- Retrieve dimensions from the hidden layer activations a_G: To retrieve dimensions from a tensor X, use: X.get_shape().as_list()
+- Unroll the hidden layer activations a_S and a_G into 2D matrices, as explained in the picture above.
+- Compute the Style matrix of the images S and G. (Use the function you had previously written.)
+- Compute the Style cost
 '''
 
 # GRADED FUNCTION: compute_layer_style_cost
@@ -350,7 +370,7 @@ Minimizing the style cost will cause the image GG to follow the style of the ima
 3.3 - Defining the total cost to optimize
 Finally, let's create a cost function that minimizes both the style and the content cost. The formula is:
 
-J(G)=αJcontent(C,G)+βJstyle(S,G)
+J(G)= α Jcontent(C,G) + β Jstyle(S,G)
  
 Exercise: Implement the total cost function which includes both the content cost and the style cost.
 '''
@@ -392,9 +412,8 @@ J = 35.34667875478276
 
 '''
 What you should remember:
-The total cost is a linear combination of the content cost Jcontent(C,G)Jcontent(C,G) and the style cost 
-Jstyle(S,G)Jstyle(S,G)
-αα and ββ are hyperparameters that control the relative weighting between content and style
+The total cost is a linear combination of the content cost Jcontent(C,G) and the style cost 
+Jstyle(S,G) αα and β are hyperparameters that control the relative weighting between content and style
 
 
 4 - Solving the optimization problem
@@ -414,7 +433,7 @@ Here's what the program will have to do:
    at every step.
 
 Lets go through the individual steps in detail.
-You've previously implemented the overall cost  J(G)J(G) . We'll now set up TensorFlow to optimize this 
+You've previously implemented the overall cost  J(G) . We'll now set up TensorFlow to optimize this 
 with respect to  GG . To do so, your program has to reset the graph and use an "Interactive Session". 
 Unlike a regular session, the "Interactive Session" installs itself as the default session to build a graph. 
 This allows you to run variables without constantly needing to refer to the session object, which simplifies
